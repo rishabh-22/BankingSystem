@@ -38,6 +38,7 @@ class Customer(User):
                                                                        message='invalid pan card number!',
                                                                                       code='nomatch')])
     address = models.TextField(null=False)
+    date_of_birth = models.DateField(null=False, )
 
     def __str__(self):
         return self.username
@@ -49,11 +50,12 @@ class Customer(User):
 class Account(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     account_number = models.CharField(max_length=20, null=False, primary_key=True)
-    balance = models.IntegerField(null=False)
-    branch = models.CharField(max_length=100, null=False)
-    micr_code = models.CharField(max_length=20, null=False)
-    branch_code = models.CharField(max_length=20, null=False)
-    ifsc_code = models.CharField(max_length=20, null=False)
+    created = models.DateTimeField(auto_now=True)
+    balance = models.IntegerField(null=False, default=0)
+    branch = models.CharField(max_length=100, null=False, default='delhi')
+    micr_code = models.CharField(max_length=20, null=False, default='ABCD')
+    branch_code = models.CharField(max_length=20, null=False, default='XYZ')
+    ifsc_code = models.CharField(max_length=20, null=False, default='ICIC001234')
 
     def __str__(self):
         return self.account_number
@@ -70,15 +72,17 @@ class Transaction(models.Model):
     status = models.CharField(max_length=20, choices=TRANSACTION_STATUS, null=False)
     mode = models.CharField(max_length=20, choices=TRANSACTION_MODE, null=False)
     location = models.CharField(max_length=100, null=False)
-    date_of_birth = models.DateField(null=False)
-
-    REQUIRED_FIELDS = ['first_name', 'last_name', 'username', 'email', 'date_of_birth']
-
-    class Meta:
-        verbose_name_plural = "Orders"
 
 
 @receiver(post_save, sender=Customer)
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
+
+
+@receiver(post_save, sender=Customer)
+def create_customer_account(sender, instance, created, **kwargs):
+    if created:
+        count = Account.objects.count()
+        number = '12340' + str(count+1).zfill(7)
+        Account.objects.create(user=instance, account_number=number)
