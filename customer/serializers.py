@@ -9,7 +9,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
         fields = ['username', 'password', 'first_name', 'last_name', 'age', 'email', 'number',
-                  'aadhaar', 'pan_card', 'address']
+                  'aadhaar', 'pan_card', 'address', 'date_of_birth']
         extra_kwargs = {
             'number': {'required': True},
             'first_name': {'required': True},
