@@ -44,7 +44,7 @@ def add_transaction(request):
     :param request:
     :return:
     """
-    try:  # todo: fix min balance condition
+    try:
         amount = int(request.data.get('amount'))
         transferee = request.data.get('transferee')
         trans_type = request.data.get('trans_type')
@@ -57,14 +57,19 @@ def add_transaction(request):
         trans_num = generate_transaction_number(get_db_counter())
         account = Account.objects.get(user=request.user)
         balance = get_updated_balance(account, trans_type, amount)
-        if balance > 1000:  # minimum balance check
+        if trans_type == 'DB':
+            if balance > 1000:  # minimum balance check
+                trans_status = 'Completed'
+                updated_balance = balance
+                message = 'Transaction successful!'
+            else:
+                trans_status = 'Failed'
+                updated_balance = account.balance
+                message = 'Transaction failed due to low balance.'
+        else:
             trans_status = 'Completed'
             updated_balance = balance
             message = 'Transaction successful!'
-        else:
-            trans_status = 'Failed'
-            updated_balance = account.balance
-            message = 'Transaction failed due to low balance.'
 
         Transaction.objects.create(transaction_number=trans_num, account=account, created=datetime.now(),
                                    amount=amount, balance=updated_balance, transferee=transferee, type=trans_type,
