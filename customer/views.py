@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.forms.models import model_to_dict
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -14,6 +15,7 @@ from customer.utils import generate_transaction_number, get_db_counter, get_upda
 
 transaction_modes = {'Cheque', 'NEFT', 'IMPS', 'UPI'}
 transaction_types = {'DB', 'CR'}
+
 
 @api_view(['GET', 'POST'])
 @permission_classes([])
@@ -72,7 +74,8 @@ def add_transaction(request):
 
         return Response({
             'message': message,
-            'transaction_id': trans_num
+            'transaction_id': trans_num,
+            'updated_balance': updated_balance
         }, status=status.HTTP_200_OK)
 
     except Exception as e:
@@ -80,3 +83,22 @@ def add_transaction(request):
         return Response({
             'message': 'Please make sure the key value pairs entered are correct.'
         }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def view_transaction(request):
+    """
+    this function is used to view a single transaction
+    :param request:
+    :return:
+    """
+    try:
+        trans_id = request.data.get('transaction_id')
+        transaction = Transaction.objects.get(transaction_number=trans_id)
+        return Response(model_to_dict(transaction), status=status.HTTP_200_OK)
+
+    except ObjectDoesNotExist:
+        return Response({
+            'message': "No Transaction with such id exists."
+        }, status=status.HTTP_404_NOT_FOUND)
