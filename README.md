@@ -34,7 +34,7 @@ Customer is required to sign up in order to access the functionality of the logi
 * Account Balance: `http://0.0.0.0:8000/customer/account/balance/`
 
 ## Staged
-The django app is hosted on an EC2 server, hence you can directly check the functionality of the API through there. No auth token is required in this case, the app can be accessed [here](http://18.224.7.211:8000/shorten).
+The django app is hosted on an EC2 server, hence you can directly check the functionality of the API through there. No auth token is required in this case, the app can be accessed [here](http://18.191.238.20:8000/admin).
 
 ## Payload
 Postman collection has been attached.
