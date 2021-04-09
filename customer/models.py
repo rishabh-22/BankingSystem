@@ -73,6 +73,9 @@ class Transaction(models.Model):
     mode = models.CharField(max_length=20, choices=TRANSACTION_MODE, null=False)
     location = models.CharField(max_length=100, null=False)
 
+    def __str__(self):
+        return self.transaction_number
+
 
 @receiver(post_save, sender=Customer)
 def create_auth_token(sender, instance=None, created=False, **kwargs):
