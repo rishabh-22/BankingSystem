@@ -28,6 +28,13 @@ def get_db_counter() -> int:
 
 
 def get_updated_balance(account, trans_type, amount):
+    """
+    this function is used to calculate the updated balance based on the transaction details
+    :param account:
+    :param trans_type:
+    :param amount:
+    :return:
+    """
     initial_balance = account.balance
     if trans_type == 'DB':
         updated_balance = initial_balance - amount
