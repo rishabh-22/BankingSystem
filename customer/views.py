@@ -125,24 +125,38 @@ def filter_transactions(request):
     :param request:
     :return:
     """
-    try:
+    try:  # todo: implement using viewSets
         data = []
         flag = request.data.get('flag')
         if flag == 'mode':
             trans_mode = request.data.get('trans_mode')
+            if trans_mode is None:
+                raise Exception
             response = Transaction.objects.filter(account__user=request.user, mode=trans_mode)
+
         elif flag == 'type':
             trans_type = request.data.get('trans_type')
+            if trans_type is None:
+                raise Exception
             response = Transaction.objects.filter(account__user=request.user, type=trans_type)
+
         elif flag == 'status':
             trans_status = request.data.get('trans_status')
+            if trans_status is None:
+                raise Exception
             response = Transaction.objects.filter(account__user=request.user, status=trans_status)
+
         elif flag == 'upi_id':
             upi_id = request.data.get('upi_id')
+            if upi_id is None:
+                raise Exception
             response = Transaction.objects.filter(account__user=request.user, transferee=upi_id)
+
         elif flag == 'date':
             start_date = request.data.get('start_time')
             end_date = request.data.get('end_date')
+            if start_date is None or end_date is None:
+                raise Exception
             response = Transaction.objects.filter(account__user=request.user, created__gte=start_date,
                                                   created__lte=end_date)
         elif flag == 'multiple':
@@ -177,7 +191,7 @@ def filter_transactions(request):
     except Exception as e:
         logging.debug(e)
         return Response({
-            'message': "Some error occurred, please try again later."
+            'message': "Please make sure the key value pairs entered are correct."
         }, status=status.HTTP_400_BAD_REQUEST)
 
 
