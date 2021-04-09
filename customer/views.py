@@ -125,7 +125,60 @@ def filter_transactions(request):
     :param request:
     :return:
     """
-    pass
+    try:
+        data = []
+        flag = request.data.get('flag')
+        if flag == 'mode':
+            trans_mode = request.data.get('trans_mode')
+            response = Transaction.objects.filter(account__user=request.user, mode=trans_mode)
+        elif flag == 'type':
+            trans_type = request.data.get('trans_type')
+            response = Transaction.objects.filter(account__user=request.user, type=trans_type)
+        elif flag == 'status':
+            trans_status = request.data.get('trans_status')
+            response = Transaction.objects.filter(account__user=request.user, status=trans_status)
+        elif flag == 'upi_id':
+            upi_id = request.data.get('upi_id')
+            response = Transaction.objects.filter(account__user=request.user, transferee=upi_id)
+        elif flag == 'date':
+            start_date = request.data.get('start_time')
+            end_date = request.data.get('end_date')
+            response = Transaction.objects.filter(account__user=request.user, created__gte=start_date,
+                                                  created__lte=end_date)
+        elif flag == 'multiple':
+            trans_mode = request.data.get('trans_mode')
+            trans_type = request.data.get('trans_type')
+            trans_status = request.data.get('trans_status')
+            upi_id = request.data.get('upi_id')
+            start_date = request.data.get('start_time')
+            end_date = request.data.get('end_date')
+            args = {'account__user': request.user}
+            if trans_mode:
+                args['mode'] = trans_mode
+            if trans_type:
+                args['type'] = trans_type
+            if trans_status:
+                args['status'] = trans_status
+            if upi_id:
+                args['transferee'] = upi_id
+            if start_date:
+                args['created__gte'] = start_date
+            if end_date:
+                args['created__lte'] = end_date
+            response = Transaction.objects.filter(**args)
+
+        else:
+            raise Exception
+
+        for element in response:
+            data.append(model_to_dict(element))
+        return Response(data, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logging.debug(e)
+        return Response({
+            'message': "Some error occurred, please try again later."
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
