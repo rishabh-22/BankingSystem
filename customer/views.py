@@ -17,7 +17,7 @@ transaction_modes = {'Cheque', 'NEFT', 'IMPS', 'UPI'}
 transaction_types = {'DB', 'CR'}
 
 
-@api_view(['GET', 'POST'])
+@api_view(['POST'])
 @permission_classes([])
 def registration_view(request):
     """
@@ -85,20 +85,85 @@ def add_transaction(request):
         }, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['POST'])
+@api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def view_transaction(request):
     """
-    this function is used to view a single transaction
+    this function is used to view transaction(s)
     :param request:
     :return:
     """
     try:
         trans_id = request.data.get('transaction_id')
-        transaction = Transaction.objects.get(transaction_number=trans_id)
-        return Response(model_to_dict(transaction), status=status.HTTP_200_OK)
+        if trans_id:
+            transaction = Transaction.objects.get(transaction_number=trans_id)
+            return Response(model_to_dict(transaction), status=status.HTTP_200_OK)
+        else:  # todo: implement pagination in this
+            response = []
+            transactions = Transaction.objects.filter(account=Account.objects.get(user=request.user))
+            for transaction in transactions:
+                response.append(model_to_dict(transaction))
+            return Response(response, status=status.HTTP_200_OK)
 
     except ObjectDoesNotExist:
         return Response({
             'message': "No Transaction with such id exists."
         }, status=status.HTTP_404_NOT_FOUND)
+
+    except Exception as e:
+        logging.debug(e)
+        return Response({
+            'message': "Some error occurred, please try again later."
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def filter_transactions(request):
+    """
+    this function is used to filter transactions based on certain conditions
+    :param request:
+    :return:
+    """
+    pass
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def view_account(request):
+    """
+    this function is used to view account details of the logged in user
+    :param request:
+    :return:
+    """
+    try:
+        account = Account.objects.get(user=request.user)
+        return Response(model_to_dict(account), status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logging.debug(e)
+        return Response({
+            'message': "Some error occurred, please try again later."
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def view_balance(request):
+    """
+    this function is used to view account balance of the logged in user
+    :param request:
+    :return:
+    """
+    try:
+        account = Account.objects.get(user=request.user)
+        return Response({
+            'account_number': account.account_number,
+            'balance': account.balance
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logging.debug(e)
+        return Response({
+            'message': "Some error occurred, please try again later."
+        }, status=status.HTTP_400_BAD_REQUEST)
